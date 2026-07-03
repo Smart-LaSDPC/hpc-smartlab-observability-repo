@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  masproject-admin:
+    image: masproject:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: masproject-admin
+
+    # =========================
+    # ⚠️ Desactiva carga automática de `.env`
+    # =========================
+    env_file: []
+
+    # =========================
+    # Configuración (runtime)
+    # =========================
+    environment:
+      # Healthcheck port
+      HEALTH_PORT: "8081"
+
+      # MQTT configuration
+      MQTT_BROKER_URL: "tcp://andromeda.lasdpc.icmc.usp.br:6183"
+      MQTT_CLIENT_ID: "agent-masproject"
+      MQTT_USERNAME: "lasdpc"
+      MQTT_PASSWORD: "l@sdpC10"
+
+    # =========================
+    # Exposición de puertos
+    # =========================
+    ports:
+      - "8081:8081"
+      - "9000:9000"   # Prometheus metrics endpoint
+
+    # =========================
+    # Control de ciclo de vida
+    # =========================
+    restart: unless-stopped
+
+    # =========================
+    # Verificación de salud HTTP
+    # =========================
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # =========================
+  # Prometheus
+  # =========================
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"   # Internal only; do not expose publicly
+    depends_on:
+      - masproject-admin
+
+  # =========================
+  # Grafana
+  # =========================
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "6184:3000"   # External port 6184 -> internal Grafana 3000
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus_data:
+  grafana_data:
+

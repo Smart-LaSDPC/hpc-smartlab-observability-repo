@@ -1,0 +1,138 @@
+{
+  "title": "Agent Operating Metrics",
+  "uid": "mas-agents",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "MQTT Messages Received (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(mas_mqtt_messages_received_total[1m]) * 60",
+          "legendFormat": "{{topic_type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "displayName": "{{topic_type}}" }
+      }
+    },
+    {
+      "id": 2,
+      "title": "DeviceData Batches Sent to Reasoner (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(mas_collector_device_data_sent_total[1m]) * 60",
+          "legendFormat": "batches/min",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 3,
+      "title": "Reasoner Messages Received (total)",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 8, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "mas_reasoner_messages_received_total",
+          "legendFormat": "total",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 4,
+      "title": "Reasoning Cycles Completed (total)",
+      "type": "stat",
+      "gridPos": { "x": 6, "y": 8, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "mas_reasoner_cycles_total",
+          "legendFormat": "total",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 5,
+      "title": "Control Messages Received (total)",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 8, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "mas_control_messages_received_total",
+          "legendFormat": "total",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 6,
+      "title": "Ontology Changes Detected (total)",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 8, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "mas_control_ontology_changes_detected_total",
+          "legendFormat": "total",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 7,
+      "title": "Sensors in Last Batch",
+      "type": "gauge",
+      "gridPos": { "x": 0, "y": 12, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "expr": "mas_collector_sensors_in_last_batch",
+          "legendFormat": "sensors",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0, "max": 20 } }
+    },
+    {
+      "id": 8,
+      "title": "Assets in Last Batch",
+      "type": "gauge",
+      "gridPos": { "x": 6, "y": 12, "w": 6, "h": 6 },
+      "targets": [
+        {
+          "expr": "mas_collector_assets_in_last_batch",
+          "legendFormat": "assets",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0, "max": 20 } }
+    },
+    {
+      "id": 9,
+      "title": "MQTT Commands Published by ControlAgent (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(mas_control_mqtt_commands_published_total[1m]) * 60",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    }
+  ]
+}
