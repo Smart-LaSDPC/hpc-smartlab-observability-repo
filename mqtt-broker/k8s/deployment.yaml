@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: mqtt-broker
+  labels:
+    app: mosquitto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto:2.0
+          ports:
+            - name: mqtt
+              containerPort: 1883
+              hostPort: 6183
+          volumeMounts:
+            - name: config
+              mountPath: /mosquitto/config/mosquitto.conf
+              subPath: mosquitto.conf
+              readOnly: true
+            - name: auth
+              mountPath: /mosquitto/config/passwordfile
+              subPath: passwordfile
+              readOnly: true
+            - name: data
+              mountPath: /mosquitto/data
+          readinessProbe:
+            tcpSocket:
+              port: 1883
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 1883
+            initialDelaySeconds: 10
+            periodSeconds: 20
+      volumes:
+        - name: config
+          configMap:
+            name: mosquitto-config
+        - name: auth
+          secret:
+            secretName: mosquitto-auth
+        - name: data
+          emptyDir: {}

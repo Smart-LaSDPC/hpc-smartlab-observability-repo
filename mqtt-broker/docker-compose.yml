@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "6183:1883" # External port 6183 -> internal 1883
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/passwordfile:/mosquitto/config/passwordfile:ro
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    healthcheck:
+      test: ["CMD", "mosquitto", "-h"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
