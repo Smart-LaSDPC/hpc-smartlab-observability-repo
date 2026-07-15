@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: masproject-admin
+  namespace: mas-jade
+  labels:
+    app: masproject-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: masproject-admin
+  template:
+    metadata:
+      labels:
+        app: masproject-admin
+    spec:
+      containers:
+      - name: masproject-container
+        image: richardtorres27/masproject:latest
+        imagePullPolicy: Always
+        
+        # Variables de entorno
+        env:
+        - name: MQTT_BROKER_URL
+          value: "tcp://andromeda.lasdpc.icmc.usp.br:6183"
+        - name: MQTT_CLIENT_ID
+          value: "agent-masproject"
+        # Inyección de datos seguros desde el Secret creado arriba
+        - name: MQTT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: masproject-secrets
+              key: mqtt-username
+        - name: MQTT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: masproject-secrets
+              key: mqtt-password
