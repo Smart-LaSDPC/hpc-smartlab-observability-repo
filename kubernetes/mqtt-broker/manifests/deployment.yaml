@@ -25,7 +25,6 @@ spec:
           ports:
             - name: mqtt
               containerPort: 1883
-              hostPort: 6183
           volumeMounts:
             - name: config
               mountPath: /mosquitto/config/mosquitto.conf

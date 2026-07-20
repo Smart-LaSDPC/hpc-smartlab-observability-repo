@@ -23,7 +23,7 @@ spec:
         # Variables de entorno
         env:
         - name: MQTT_BROKER_URL
-          value: "tcp://andromeda.lasdpc.icmc.usp.br:6183"
+          value: "tcp://mosquitto.mqtt-broker:1883"
         - name: MQTT_CLIENT_ID
           value: "agent-masproject"
         # Inyección de datos seguros desde el Secret creado arriba

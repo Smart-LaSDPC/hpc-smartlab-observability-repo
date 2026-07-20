@@ -15,13 +15,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mosquitto-ws
+  name: mosquitto-np
   namespace: mqtt-broker
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: mosquitto
   ports:
-    - name: ws
-      port: 9001
-      targetPort: 9001
+    - name: mqtt
+      port: 1883
+      targetPort: 1883
+      nodePort: 31883
+
