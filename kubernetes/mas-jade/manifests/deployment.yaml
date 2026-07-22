@@ -19,13 +19,24 @@ spec:
       - name: masproject-container
         image: richardtorres27/masproject:latest
         imagePullPolicy: Always
+
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "1000m"
+            memory: "512Mi"
+
         
         # Variables de entorno
         env:
         - name: MQTT_BROKER_URL
           value: "tcp://mosquitto.mqtt-broker:1883"
         - name: MQTT_CLIENT_ID
-          value: "agent-masproject"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         # Inyección de datos seguros desde el Secret creado arriba
         - name: MQTT_USERNAME
           valueFrom:

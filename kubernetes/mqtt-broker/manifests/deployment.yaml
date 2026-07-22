@@ -25,6 +25,13 @@ spec:
           ports:
             - name: mqtt
               containerPort: 1883
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
           volumeMounts:
             - name: config
               mountPath: /mosquitto/config/mosquitto.conf
