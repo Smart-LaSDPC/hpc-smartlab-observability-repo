@@ -10,8 +10,9 @@ SmartLab Performance Evaluation Platform
 - [Quick Start: Repository & Cluster Setup](#-quick-start-repository--cluster-setup)
 - [Kubernetes Deployments](#️-kubernetes-deployments)
   - [1. MQTT Broker (Mosquitto)](#1-mqtt-broker-mosquitto)
-  - [2. MAS-JADE (*Coming Soon*)](#2-mas-jade)
+  - [2. MAS-JADE](#2-mas-jade)
 - [Monitoring & Observability](#-monitoring--observability-grafana--prometheus)
+- [Usage Example](#-usage-example)
 
 ---
 
@@ -76,8 +77,7 @@ kubectl apply -f ./kubernetes/mqtt-broker/manifests/secret.yaml
 
 > [!Note]
 > **Custom Credentials (Optional):** If you wish to use your own password file instead of the default secret, create the secret manually:
-> kubectl -n mqtt-broker create secret generic mosquitto-auth \
-> --from-file=passwordfile=./mqtt-broker/passwordfile
+> `kubectl -n mqtt-broker create secret generic mosquitto-auth --from-file=passwordfile=./mqtt-broker/passwordfile`
 
 #### Step C: Deploy Deployment and Service
 
@@ -213,7 +213,9 @@ helm repo update
 Create the `monitoring` namespace and deploy the stack using Helm:
 
 ```bash
-helm install prometheus    -n monitoring prometheus-community/kube-prometheus-stack    --create-namespace
+helm install prometheus \
+   -n monitoring prometheus-community/kube-prometheus-stack \
+   --create-namespace
 ```
 
 ### 3. Verify the Deployment
@@ -248,4 +250,94 @@ To retrieve the automatically generated administrative password for Grafana, run
 ```bash
 kubectl get secret --namespace monitoring -l app.kubernetes.io/component=admin-secret \
    -o jsonpath="{.items[0].data.admin-password}" | base64 --decode ; echo
+```
+
+## 🧪 Usage Example
+
+To test the platform, run the simulator following the instructions in the [hpc-simulator-laboratory-project-repo](https://github.com/Smart-LaSDPC/hpc-simulator-laboratory-project-repo) repository.
+
+Make sure to update the MQTT credentials in the configuration file: [`simulator-project-2026/app/mqttConfig.py`](https://github.com/Smart-LaSDPC/hpc-simulator-laboratory-project-repo/blob/main/simulator-project-2026/app/mqttConfig.py).
+
+### 1. Establish an SSH Tunnel
+For this example, an SSH tunnel is established to forward the cluster's NodePort locally:
+
+```bash
+ssh -L 1883:localhost:31883 -p 2342 herminio@andromeda.lasdpc.icmc.usp.br -N
+```
+
+### 2. Configure MQTT Settings
+Configure the simulator's connection parameters with your credentials:
+
+```python
+# example
+self.mqtt_data = {
+   "user": "lasdpc",
+   "password": "l@sdpC10",
+   "host": "localhost",
+   "port": 1883
+}
+```
+
+![Simulator Interface](./images/simulator.png)
+
+### 3. Monitor Mosquitto Broker Logs
+Inspect the MQTT broker logs to verify incoming client connections:
+
+```bash
+kubectl -n mqtt-broker logs -f deployment/mosquitto
+```
+*(Or specify the pod name: `kubectl -n mqtt-broker logs -f mosquitto-<id-pod>`)*
+
+Expected output:
+```text
+1784912761: New connection from 10.0.0.171:43380 on port 1883.
+1784912762: New client connected from 10.0.0.171:43380 as GUI-Subcriber-Publisher (p2, c1, k60, u'lasdpc').
+```
+
+The simulator interface will reflect active changes and state updates:
+
+![Simulator Active State](./images/simulator2.png)
+
+---
+
+## Agent Operations & Logs
+
+You can inspect the changes and actions performed by the `masproject-admin` agent on the simulator by tailing its logs:
+
+```bash
+kubectl -n mas-jade logs -f deployment/masproject-admin --tail=10
+```
+
+Expected output:
+```text
+Removing SensorTemperature: sensor_temperature1
+Received message from ReasonerAgent: ( agent-identifier :name ReasonerAgent@10.0.3.152:1099/JADE  :addresses (sequence http://masproject-admin-669bbfc6d8-2zqwq:7778/acc ))
+OntModel saved as ontologies/lasdpc_v23.rdf_changed.rdf
+Model saved as ontologies/lasdpc_v23.rdf_inference.rdf
+```
+
+---
+
+## Monitoring Resource Consumption in Grafana
+
+You can track real-time resource utilization directly through your Grafana dashboards:
+
+### CPU Usage
+![Grafana CPU Usage for MAS-JADE](./images/grafana-mas-jade-cpu.png)
+
+### Memory Usage
+![Grafana Memory Usage for MAS-JADE](./images/grafana-mas-jade-memory.png)
+
+### Resource Allocation & Limits
+
+The dashboards display a comparison between used resources versus requested and limited boundaries. These values can be adjusted within the deployment manifest under the `resources` section. If a container reaches its limit, Kubernetes enforces throttling or termination based on the configuration:
+
+```yaml
+resources:
+   requests:
+     cpu: "250m"
+     memory: "256Mi"
+   limits:
+     cpu: "1000m"
+     memory: "512Mi"
 ```
