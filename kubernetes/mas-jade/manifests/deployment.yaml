@@ -28,8 +28,6 @@ spec:
             cpu: "1000m"
             memory: "512Mi"
 
-        
-        # Variables de entorno
         env:
         - name: MQTT_BROKER_URL
           value: "tcp://mosquitto.mqtt-broker:1883"
@@ -37,7 +35,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        # Inyección de datos seguros desde el Secret creado arriba
         - name: MQTT_USERNAME
           valueFrom:
             secretKeyRef:
